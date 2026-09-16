@@ -1,38 +1,35 @@
 package com.example.juegoe
-import kotlin.math.*
 
-class Logica {
-    var anguloObjetivo: Float = 0f
-    val tiempoTotalSegundos: Int = 60
+import kotlin.random.Random
 
-    fun iniciarNuevaPartida() {
-        anguloObjetivo = (0..359).random().toFloat()
+class JuegoLogica {
+    // Posición objetivo aleatoria en grados (de 0 a 360)
+    var objetivoGrados: Float = 0f
+    var tiempoRestante: Int = 45 // segundos
+    var puntosActuales: Int = 500
+
+    init {
+        reiniciarPartida()
     }
 
-    fun obtenerDiferenciaAngulo(anguloActual: Float): Float {
-        var diferencia = abs(anguloActual - anguloObjetivo)
-        if (diferencia > 180) {
-            diferencia = 360 - diferencia
+    fun reiniciarPartida() {
+        objetivoGrados = Random.nextFloat() * 360f
+        tiempoRestante = 45
+        puntosActuales = 500
+    }
+
+    // Calcula qué tan "caliente" o "frío" está el usuario según hacia dónde apunta (en grados)
+    fun evaluarTemperatura(orientacionActual: Float): String {
+        // Calculamos la diferencia absoluta entre el celular y el objetivo
+        var diferencia = kotlin.math.abs(orientacionActual - objetivoGrados)
+        if (diferencia > 180f) {
+            diferencia = 360f - diferencia
         }
-        return diferencia
-    }
 
-    fun obtenerTemperatura(diferencia: Float): String {
         return when {
-            diferencia <= 15 -> "¡CALIENTE!"
-            diferencia <= 45 -> "Tibio"
-            else -> "Muy Frío"
+            diferencia < 15f -> "¡Caliente!" // Muy cerca
+            diferencia < 45f -> "Tibio"      // Cerca
+            else -> "Muy frío"               // Lejos
         }
-    }
-
-    fun calcularPrecision(diferencia: Float): Int {
-        val precision = ((180 - diferencia) / 180) * 100
-        return precision.toInt()
-    }
-
-    fun calcularPuntaje(tiempoRestanteSegundos: Int, precision: Int): Int {
-        val bonificacionTiempo = tiempoRestanteSegundos * 10
-        val bonificacionPrecision = precision * 5
-        return bonificacionTiempo + bonificacionPrecision
     }
 }
