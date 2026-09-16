@@ -428,29 +428,37 @@ fun PantallaJuego(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
-                onClick = {
-                    if (seAcaboElTiempo) {
-                        alVolver()
-                    } else {
-                        val tiempoUsado = 45 - tiempoRestante
-                        val diferenciaGrados = kotlin.math.abs(orientacionActual - juegoLogica.objetivoGrados).let { if (it > 180f) 360f - it else it }
-                        val precisionCalculada = (100f - (diferenciaGrados / 180f * 100f)).coerceIn(0f, 100f).toInt()
-                        val puntosCalculados = (precisionCalculada * 10) + (tiempoUsado * 2)
-                        alGanar(tiempoUsado, puntosCalculados, precisionCalculada)
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = MoradoPrincipal),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Text(
-                    if (seAcaboElTiempo) "VOLVER AL MENÚ" else "¡Simular que lo encontré!",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
-                )
+            // --- MOSTRAR EL BOTÓN SOLO CUANDO ESTÁ EN "¡Caliente!" O SI SE ACABÓ EL TIEMPO ---
+            if (estadoTemperatura == "¡Caliente!" || seAcaboElTiempo) {
+                Button(
+                    onClick = {
+                        if (seAcaboElTiempo) {
+                            alVolver()
+                        } else {
+                            val tiempoUsado = 45 - tiempoRestante
+                            val diferenciaGrados = kotlin.math.abs(orientacionActual - juegoLogica.objetivoGrados).let { if (it > 180f) 360f - it else it }
+                            val precisionCalculada = (100f - (diferenciaGrados / 180f * 100f)).coerceIn(0f, 100f).toInt()
+                            val puntosCalculados = (precisionCalculada * 10) + (tiempoUsado * 2)
+                            alGanar(tiempoUsado, puntosCalculados, precisionCalculada)
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (seAcaboElTiempo) MoradoOscuro else Color(0xFF4CAF50)
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(
+                        if (seAcaboElTiempo) "VOLVER AL MENÚ" else "¡ENCONTRADO!",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            } else {
+                // Espacio transparente para mantener el diseño alineado mientras no está en caliente
+                Spacer(modifier = Modifier.height(50.dp))
             }
         }
     }
