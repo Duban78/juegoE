@@ -292,10 +292,23 @@ fun PantallaJuego(
     var tiempoRestante by remember { mutableStateOf(45) }
     var seAcaboElTiempo by remember { mutableStateOf(false) }
 
+    // --- CONTADORES DE TIEMPO EN CADA ESTADO (EN SEGUNDOS) ---
+    var segundosEnFrio by remember { mutableStateOf(0) }
+    var segundosEnTibio by remember { mutableStateOf(0) }
+    var segundosEnCaliente by remember { mutableStateOf(0) }
+
+    // Temporizador principal del juego
     LaunchedEffect(key1 = tiempoRestante) {
         if (tiempoRestante > 0 && !seAcaboElTiempo) {
             delay(1000L)
             tiempoRestante--
+
+            // Cada segundo acumulamos el tiempo según el estado actual
+            when (estadoTemperatura) {
+                "¡Caliente!" -> segundosEnCaliente++
+                "Tibio" -> segundosEnTibio++
+                else -> segundosEnFrio++
+            }
         } else if (tiempoRestante == 0 && !seAcaboElTiempo) {
             seAcaboElTiempo = true
         }
@@ -428,17 +441,24 @@ fun PantallaJuego(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- MOSTRAR EL BOTÓN SOLO CUANDO ESTÁ EN "¡Caliente!" O SI SE ACABÓ EL TIEMPO ---
+            // El botón solo aparece en "¡Caliente!" o si terminó el tiempo
             if (estadoTemperatura == "¡Caliente!" || seAcaboElTiempo) {
                 Button(
                     onClick = {
                         if (seAcaboElTiempo) {
                             alVolver()
                         } else {
+                            val tiempoTotalTranscurrido = (segundosEnFrio + segundosEnTibio + segundosEnCaliente).coerceAtLeast(1)
+
+                            // Ponderación de precisión:
+                            // Caliente vale 100% (1.0f), Tibio vale 50% (0.5f), Frío vale 0% (0.0f)
+                            val puntosPrecision = (segundosEnCaliente * 100f) + (segundosEnTibio * 50f) + (segundosEnFrio * 0f)
+                            val precisionCalculada = (puntosPrecision / tiempoTotalTranscurrido).coerceIn(0f, 100f).toInt()
+
+                            // Bonificación por ganar rápido
                             val tiempoUsado = 45 - tiempoRestante
-                            val diferenciaGrados = kotlin.math.abs(orientacionActual - juegoLogica.objetivoGrados).let { if (it > 180f) 360f - it else it }
-                            val precisionCalculada = (100f - (diferenciaGrados / 180f * 100f)).coerceIn(0f, 100f).toInt()
-                            val puntosCalculados = (precisionCalculada * 10) + (tiempoUsado * 2)
+                            val puntosCalculados = (precisionCalculada * 10) + ((45 - tiempoUsado) * 5)
+
                             alGanar(tiempoUsado, puntosCalculados, precisionCalculada)
                         }
                     },
@@ -457,7 +477,6 @@ fun PantallaJuego(
                     )
                 }
             } else {
-                // Espacio transparente para mantener el diseño alineado mientras no está en caliente
                 Spacer(modifier = Modifier.height(50.dp))
             }
         }
